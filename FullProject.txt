@@ -1,0 +1,92 @@
+
+KAPIL VERMA - DJANGO PROJECT
+Home, About, Contact - Nav Bar se jude hue
+Age >= 18 = GREEN, Age < 18 = RED
+GitHub: kv4513699-bit
+
+
+FILE 1 - myapp/views.py
+
+from django.shortcuts import render
+
+def home(request):
+    age = None
+    if request.method == "POST":
+        age = int(request.POST.get("age"))
+    return render(request, "home.html", {"age": age})
+
+def about(request):
+    return render(request, "about.html")
+
+def contact(request):
+    return render(request, "contact.html")
+
+FILE 2 - myapp/urls.py
+
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("", views.home, name="home"),
+    path("about/", views.about, name="about"),
+    path("contact/", views.contact, name="contact"),
+]
+
+FILE 3 - myproject/urls.py
+
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("", include("myapp.urls")),
+]
+
+FILE 4 - myapp/templates/base.html
+
+<html><body>
+<div style="background:black; padding:15px;">
+<a href="{% url 'home' %}" style="color:white;">Home</a> &nbsp;&nbsp;
+<a href="{% url 'about' %}" style="color:white;">About</a> &nbsp;&nbsp;
+<a href="{% url 'contact' %}" style="color:white;">Contact</a>
+</div>
+{% block content %}{% endblock %}
+</body></html>
+
+FILE 5 - myapp/templates/home.html
+
+{% extends "base.html" %}
+{% block content %}
+<center><h1>Home Page</h1>
+<form method="POST">{% csrf_token %}
+<input type="number" name="age" placeholder="Age likho" required>
+<br><br><button type="submit">Check Karo</button></form>
+{% if age != None %}
+  {% if age >= 18 %}
+    <div style="background:green; color:white; padding:20px;">Age {{ age }} - Adult! GREEN</div>
+  {% else %}
+    <div style="background:red; color:white; padding:20px;">Age {{ age }} - Chhota! RED</div>
+  {% endif %}
+{% endif %}
+</center>
+{% endblock %}
+
+FILE 6 - myapp/templates/about.html
+
+{% extends "base.html" %}
+{% block content %}
+<center><h1>About Page</h1><p>Kapil - Khilchipur se</p></center>
+{% endblock %}
+
+FILE 7 - myapp/templates/contact.html
+
+{% extends "base.html" %}
+{% block content %}
+<center><h1>Contact Page</h1><p>Mobile: 98XXX XXXXX</p></center>
+{% endblock %}
+
+CHALANE KE LIYE
+
+python manage.py runserver
+Phir browser me - 127.0.0.1:8000
+Age 20 = GREEN, Age 15 = RED
