@@ -1,0 +1,67 @@
+<html>
+<head><title>Kapil - Product ID QueryString</title></head>
+<body style="margin:0;font-family:Arial;">
+
+<div style="background:black;color:white;text-align:center;padding:20px;">
+<h1>Kapil Verma - Product - For Loop + QueryString</h1>
+<p>Khilchipur, MP | GitHub: kv4513699-bit</p>
+</div>
+
+<center>
+<h2>Product List - For Loop Se Bana Hai</h2>
+<div id="plist"></div>
+
+<hr>
+<h2>Selected Product Detail</h2>
+<div id="detail"><p>Upar kisi Product pe Click kar!</p></div>
+</center>
+
+<div style="background:black;color:white;text-align:center;padding:15px;margin-top:20px;">
+<b>Kapil Verma | © 2026</b>
+</div>
+
+<script>
+// Django wala products list - views.py jaisa
+let products = [
+  {id:1, name:"Voltas Fridge", price:5768},
+  {id:2, name:"Samsung Fridge", price:10000},
+  {id:3, name:"ABC Fridge", price:1000}
+];
+
+// 1. FOR LOOP - Django {% for p in products %} jaisa
+let html = "";
+if(products.length == 0){
+  html = "<h2>Stock Khatam Hai! - For Empty</h2>";
+} else {
+  for(let p of products){
+    html += "<div style='border:1px solid black;padding:10px;margin:10px;width:250px;display:inline-block;'>"
+    + "<h3>" + p.name + "</h3>"
+    + "<p>Price: Rs." + p.price + "</p>"
+    // 2. QUERYSTRING WALA LINK - ?id=
+    + "<a href='?id=" + p.id + "'><button style='background:black;color:white;padding:8px 15px;'>View - ID " + p.id + "</button></a>"
+    + "</div>";
+  }
+}
+document.getElementById("plist").innerHTML = html;
+
+// 3. QUERYSTRING PAKDO - Django request.GET.get('id') jaisa
+let params = new URLSearchParams(window.location.search);
+let pid = params.get('id');
+
+if(pid){
+  let selected = null;
+  for(let p of products){
+    if(p.id == pid){ selected = p; }
+  }
+  if(selected){
+    document.getElementById("detail").innerHTML =
+    "<h1 style='color:green;'>" + selected.name + "</h1>"
+    + "<h2>ID: " + selected.id + " | Price: Rs." + selected.price + "</h2>"
+    + "<p>URL me dekh: ?id=" + selected.id + "</p>";
+  } else {
+    document.getElementById("detail").innerHTML = "<h2>Ye ID wala Product nahi hai!</h2>";
+  }
+}
+</script>
+</body>
+</html>
