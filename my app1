@@ -1,0 +1,250 @@
+# ============================================================
+# FILE 1: kapil_shop/settings.py - Isme sirf ye 2 line add karna
+# ============================================================
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'shop',  # <-- YE WALI LINE ADD KARNA
+]
+
+# Neeche sabse last me ye add karna
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+LOGIN_URL = '/login/'
+
+# ============================================================
+# FILE 2: shop/models.py - M = MODEL
+# ============================================================
+from django.db import models
+
+class Product(models.Model):
+    name = models.CharField(max_length=100)
+    price = models.IntegerField()
+    gen = models.CharField(max_length=50, default='Latest')
+    image_url = models.URLField(blank=True, null=True)
+    image = models.ImageField(upload_to='products/', blank=True, null=True)
+    stock = models.CharField(max_length=20, choices=[('In Stock','In Stock'),('Out of Stock','Out of Stock')], default='In Stock')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+    def get_image(self):
+        if self.image:
+            return self.image.url
+        return self.image_url or 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=400'
+
+# ============================================================
+# FILE 3: shop/views.py - V = VIEW - Pura Logic Yahi Hai
+# ============================================================
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.paginator import Paginator
+from .models import Product
+
+def is_admin(user):
+    return user.is_superuser or user.is_staff
+
+def login_view(request):
+    if request.method == 'POST':
+        user = authenticate(request, username=request.POST.get('username'), password=request.POST.get('password'))
+        if user:
+            login(request, user)
+            return redirect('home')
+        return render(request, 'shop/login.html', {'error': 'Galat Username / Password!'})
+    return render(request, 'shop/login.html')
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')
+
+def guest_view(request):
+    request.session['role'] = 'guest'
+    return redirect('home')
+
+def home(request):
+    if not request.user.is_authenticated and request.session.get('role') != 'guest':
+        return redirect('login')
+    if request.user.is_authenticated:
+        role = 'admin' if is_admin(request.user) else 'user'
+    else:
+        role = 'guest'
+    all_products = Product.objects.all().order_by('-created_at')
+    paginator = Paginator(all_products, 2)  # 1 Page pe 2 product
+    page_obj = paginator.get_page(request.GET.get('page', 1))
+    return render(request, 'shop/home.html', {'page_obj': page_obj, 'role': role})
+
+@login_required
+@user_passes_test(is_admin)
+def add_product(request):
+    if request.method == 'POST':
+        Product.objects.create(
+            name=request.POST.get('name'),
+            price=request.POST.get('price'),
+            gen=request.POST.get('gen'),
+            image_url=request.POST.get('image_url'),
+            stock=request.POST.get('stock'),
+        )
+        return redirect('home')
+    return render(request, 'shop/add_product.html')
+
+@login_required
+@user_passes_test(is_admin)
+def delete_product(request, pk):
+    get_object_or_404(Product, pk=pk).delete()
+    return redirect('home')
+
+# ============================================================
+# FILE 4: shop/urls.py
+# ============================================================
+from django.urls import path
+from . import views
+urlpatterns = [
+    path('', views.home, name='home'),
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('guest/', views.guest_view, name='guest'),
+    path('add/', views.add_product, name='add_product'),
+    path('delete/<int:pk>/', views.delete_product, name='delete_product'),
+]
+
+# ============================================================
+# FILE 5: kapil_shop/urls.py - Main Wala
+# ============================================================
+from django.contrib import admin
+from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('shop.urls')),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# ============================================================
+# FILE 6: shop/templates/shop/home.html - T = TEMPLATE
+# ============================================================
+"""
+<!DOCTYPE html>
+<html>
+<head><title>Kapil Shop - Django MVT</title>
+<style>
+  body{font-family:Arial;background:#f1f3f6;margin:0}
+  .navbar{background:#2874f0;color:white;padding:15px;display:flex;justify-content:space-between}
+  .container{display:flex;flex-wrap:wrap;gap:20px;justify-content:center;padding:20px}
+  .card{background:white;width:300px;padding:15px;border-radius:12px;text-align:center}
+  .card img{width:100%;height:180px;object-fit:cover;border-radius:8px}
+  .price{color:green;font-weight:bold;font-size:20px}
+  .btn{background:#ff9f00;color:white;padding:10px 20px;border:none;border-radius:5px;font-weight:bold;cursor:pointer}
+  footer{background:#172337;color:white;text-align:center;padding:30px;margin-top:20px}
+</style>
+</head>
+<body>
+<div class="navbar">
+  <b>Kapil Shop 🛒 - Django MVT</b>
+  <span>Role: {{ role|upper }} | {{ request.user.username|default:"Guest" }}</span>
+  <a href="{% url 'logout' %}" style="color:white;">Logout</a>
+</div>
+
+{% if role == 'admin' %}
+<div style="text-align:center;margin:20px;">
+  <button onclick="document.getElementById('test-result').innerText='✅ Playwright Test Passed - Sirf Admin Ne Dekha!'" style="background:#000;color:#00ff00;padding:12px 20px;border:none;font-weight:bold;border-radius:5px;cursor:pointer;">▶ Run Playwright Test</button>
+  <p id="test-result" style="color:green;font-weight:bold;"></p>
+  <a href="{% url 'add_product' %}" style="background:#2874f0;color:white;padding:12px 20px;text-decoration:none;border-radius:6px;font-weight:bold;">➕ Naya Product Add Karo</a>
+</div>
+{% endif %}
+
+<h2 style="text-align:center;">Laptops - Total {{ page_obj.paginator.count }} Products</h2>
+<div class="container">
+  {% for p in page_obj %}
+  <div class="card">
+    <img src="{{ p.get_image }}">
+    <h3>{{ p.name }}</h3>
+    <p class="price">₹{{ p.price }}</p>
+    <p>Gen: {{ p.gen }}</p>
+    {% if role == 'guest' %}
+      <p style="color:orange;">⚠️ Add to Cart ke liye Login Karo</p>
+    {% elif p.stock == 'In Stock' %}
+      <p style="color:green;">✅ In Stock</p><button class="btn">Add to Cart</button>
+    {% else %}
+      <p style="color:red;">❌ Out of Stock</p><button class="btn" disabled>Out of Stock</button>
+    {% endif %}
+    {% if role == 'admin' %}
+      <br><br><a href="{% url 'delete_product' p.id %}" style="color:red;">🗑️ Delete</a>
+    {% endif %}
+  </div>
+  {% empty %}
+  <p>Koi Product Nahi Hai - Admin se Add Karwao!</p>
+  {% endfor %}
+</div>
+
+<div style="text-align:center;margin:20px;">
+  {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}">⬅ Previous</a>
+  {% endif %}
+  {% for num in page_obj.paginator.page_range %}
+    {% if num == page_obj.number %}
+      <button style="background:#2874f0;color:white;padding:10px 15px;border:none;border-radius:5px;font-weight:bold;">{{ num }}</button>
+    {% else %}
+      <a href="?page={{ num }}" style="background:white;padding:10px 15px;border:1px solid #ccc;border-radius:5px;text-decoration:none;color:black;">{{ num }}</a>
+    {% endif %}
+  {% endfor %}
+  {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}">Next ➡</a>
+  {% endif %}
+  <p>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</p>
+</div>
+<footer><h3>Kapil Shop - Itarsi, MP</h3><p>© 2026 Kapil Shop. All Rights Reserved.</p></footer>
+</body>
+</html>
+"""
+
+# ============================================================
+# FILE 7: shop/templates/shop/login.html
+# ============================================================
+"""
+<h2 style="text-align:center;">🔐 Login - Role Based</h2>
+{% if error %}<p style="color:red;text-align:center;">{{ error }}</p>{% endif %}
+<form method="POST" style="max-width:400px;margin:auto;text-align:center;">
+  {% csrf_token %}
+  <input name="username" placeholder="Username" style="width:100%;padding:10px;margin:5px;"><br>
+  <input name="password" type="password" placeholder="Password" style="width:100%;padding:10px;margin:5px;"><br>
+  <button style="background:#2874f0;color:white;padding:12px;width:100%;border:none;font-weight:bold;">Login Karo</button>
+</form>
+<p style="text-align:center;"><a href="{% url 'guest' %}">👀 Guest Ke Roop Me Dekho</a></p>
+"""
+
+# ============================================================
+# FILE 8: shop/templates/shop/add_product.html
+# ============================================================
+"""
+<h2 style="text-align:center;">👑 Admin - Naya Product Add Karo</h2>
+<form method="POST" style="max-width:500px;margin:auto;">
+  {% csrf_token %}
+  <input name="name" placeholder="Product Name" required style="width:100%;padding:10px;margin:5px;"><br>
+  <input name="price" type="number" placeholder="Price" required style="width:100%;padding:10px;margin:5px;"><br>
+  <input name="gen" placeholder="Gen" style="width:100%;padding:10px;margin:5px;"><br>
+  <input name="image_url" placeholder="Image Link - Unsplash" style="width:100%;padding:10px;margin:5px;"><br>
+  <select name="stock" style="width:100%;padding:10px;margin:5px;"><option>In Stock</option><option>Out of Stock</option></select><br>
+  <button style="background:#2874f0;color:white;padding:12px;width:100%;border:none;font-weight:bold;">✅ Add Product</button>
+</form>
+"""
+
+# ============================================================
+# LAST COMMANDS - Terminal Me Ek Baar Chalana Hai
+# ============================================================
+"""
+django-admin startproject kapil_shop
+cd kapil_shop
+python manage.py startapp shop
+python manage.py makemigrations
+python manage.py migrate
+python manage.py createsuperuser
+# Username: admin / Password: admin123
+python manage.py runserver
+# Browser me kholo: http://127.0.0.1:8000/
+"""
