@@ -1,0 +1,487 @@
+GITHUB REPOSITORY: pip-list-vs-pip-freeze
+
+Topic: Python Package Management
+Level: Beginner to Junior Python Developer
+Objective: Understand pip list, pip freeze, virtual environments and dependency management.
+
+---
+
+1. CONCEPT: pip list vs pip freeze
+
+Both commands display installed Python packages, but their output formats and purposes differ.
+
+pip list
+
+Displays installed packages in a readable table.
+
+Command:
+
+python -m pip list
+
+Example output:
+
+Package       Version
+------------- -------
+Django        5.2.8
+requests      2.32.4
+sqlparse      0.5.3
+
+Purpose:
+
+- Inspect installed packages.
+- Check package versions.
+- Troubleshoot dependencies.
+
+pip freeze
+
+Displays installed packages in requirements-file format.
+
+Command:
+
+python -m pip freeze
+
+Example output:
+
+Django==5.2.8
+requests==2.32.4
+sqlparse==0.5.3
+
+Purpose:
+
+- Capture installed package versions.
+- Create requirements.txt.
+- Reproduce an environment.
+
+Comparison
+
+Feature| pip list| pip freeze
+Output| Table| Requirements format
+Package versions| Yes| Yes
+Human-readable| Yes| Yes
+Requirements compatible| Not directly| Yes
+Dependency snapshot| No| Yes
+
+---
+
+2. WINDOWS COMMAND PROMPT (CMD)
+
+Step 1: Check Python installation
+
+python --version
+python -m pip --version
+
+If Python is installed through the Python launcher:
+
+py --version
+
+Step 2: Create project folder
+
+mkdir pip-list-vs-pip-freeze
+cd pip-list-vs-pip-freeze
+
+Step 3: Create virtual environment
+
+python -m venv venv
+
+Step 4: Activate environment
+
+venv\Scripts\activate.bat
+
+Step 5: Upgrade pip
+
+python -m pip install --upgrade pip
+
+Step 6: Install packages
+
+python -m pip install django requests
+
+Step 7: Inspect packages
+
+python -m pip list
+
+Step 8: Capture dependencies
+
+python -m pip freeze
+
+Step 9: Export dependencies
+
+python -m pip freeze > requirements.txt
+
+Step 10: Read requirements file
+
+type requirements.txt
+
+---
+
+3. TERMUX COMMANDS
+
+Step 1: Update Termux
+
+pkg update && pkg upgrade
+
+Step 2: Install Python and Git
+
+pkg install python git
+
+Step 3: Create workspace
+
+mkdir -p ~/projects
+cd ~/projects
+
+Step 4: Create project
+
+mkdir pip-list-vs-pip-freeze
+cd pip-list-vs-pip-freeze
+
+Step 5: Create virtual environment
+
+python -m venv venv
+
+Step 6: Activate environment
+
+source venv/bin/activate
+
+Step 7: Upgrade pip
+
+python -m pip install --upgrade pip
+
+Step 8: Install packages
+
+python -m pip install django requests
+
+Step 9: Inspect installed packages
+
+python -m pip list
+
+Step 10: Generate dependency snapshot
+
+python -m pip freeze
+
+Step 11: Export to requirements.txt
+
+python -m pip freeze > requirements.txt
+
+Step 12: Read requirements file
+
+cat requirements.txt
+
+---
+
+4. RECREATE ENVIRONMENT
+
+Imagine your Django project works on your computer, and now you want to deploy it on another computer or cloud server.
+
+You can recreate its dependencies.
+
+Step 1: Create another environment
+
+Windows CMD:
+
+python -m venv newenv
+newenv\Scripts\activate.bat
+
+Termux:
+
+python -m venv newenv
+source newenv/bin/activate
+
+Step 2: Install dependencies
+
+python -m pip install -r requirements.txt
+
+Step 3: Verify packages
+
+python -m pip list
+
+Important: Run the installation command from the folder containing requirements.txt, or provide its correct path.
+
+---
+
+5. PRACTICAL DJANGO PROJECT EXAMPLE
+
+Suppose you have two independent Django projects.
+
+projects/
+│
+├── ecommerce/
+│   ├── venv/
+│   ├── manage.py
+│   └── requirements.txt
+│
+└── structura/
+    ├── venv/
+    ├── manage.py
+    └── requirements.txt
+
+E-commerce environment
+
+cd ecommerce
+
+python -m venv venv
+
+# Windows CMD
+venv\Scripts\activate.bat
+
+# Termux
+source venv/bin/activate
+
+python -m pip install django requests
+
+python -m pip freeze > requirements.txt
+
+STRUCTURA environment
+
+cd ../structura
+
+python -m venv venv
+
+# Windows CMD
+venv\Scripts\activate.bat
+
+# Termux
+source venv/bin/activate
+
+python -m pip install django numpy
+
+python -m pip freeze > requirements.txt
+
+Each project now has an independent dependency environment.
+
+---
+
+6. ADDITIONAL PIP COMMANDS
+
+Inspect packages:
+
+python -m pip list
+
+Requirements-style output:
+
+python -m pip list --format=freeze
+
+Capture dependencies:
+
+python -m pip freeze
+
+Check dependency conflicts:
+
+python -m pip check
+
+Show package information:
+
+python -m pip show django
+
+Install a package:
+
+python -m pip install django
+
+Uninstall a package:
+
+python -m pip uninstall django
+
+---
+
+7. PYTHON CODE EXPERIMENTS
+
+Experiment 1: Display installed packages
+
+Create a file named:
+
+pip_list_demo.py
+
+import subprocess
+import sys
+
+print("Python executable:")
+print(sys.executable)
+
+print("\nInstalled packages:")
+
+subprocess.run([
+    sys.executable,
+    "-m",
+    "pip",
+    "list"
+])
+
+Run:
+
+python pip_list_demo.py
+
+Experiment 2: Display frozen dependencies
+
+Create:
+
+pip_freeze_demo.py
+
+import subprocess
+import sys
+
+print("Python executable:")
+print(sys.executable)
+
+print("\nFrozen dependencies:")
+
+subprocess.run([
+    sys.executable,
+    "-m",
+    "pip",
+    "freeze"
+])
+
+Run:
+
+python pip_freeze_demo.py
+
+---
+
+8. GIT AND GITHUB COMMANDS
+
+Create a new empty GitHub repository:
+
+pip-list-vs-pip-freeze
+
+Then execute:
+
+git init
+
+git add .
+
+git commit -m "Add pip list vs pip freeze learning guide"
+
+git branch -M main
+
+git remote add origin https://github.com/YOUR-USERNAME/pip-list-vs-pip-freeze.git
+
+git push -u origin main
+
+Replace YOUR-USERNAME with your GitHub username.
+
+Important .gitignore
+
+Never upload your virtual environment to GitHub.
+
+Create a file named .gitignore:
+
+venv/
+.venv/
+__pycache__/
+*.pyc
+.env
+
+---
+
+9. REAL-WORLD DEVELOPER SCENARIO
+
+Jira Ticket: PY-101
+
+Title: Maintain reproducible Python dependencies.
+
+Business requirement:
+
+The development team wants to deploy the Django application on a cloud environment without dependency-version conflicts.
+
+Developer tasks:
+
+1. Create an isolated virtual environment.
+2. Install required Python packages.
+3. Inspect installed packages.
+4. Generate requirements.txt.
+5. Push source code and requirements.txt to GitHub.
+6. Recreate the environment on another machine.
+7. Verify dependency consistency using pip check.
+
+Acceptance criteria:
+
+- Project dependencies are documented.
+- Virtual environment is not committed.
+- Another developer can install dependencies.
+- Dependency checks pass.
+
+---
+
+10. INTERVIEW QUESTIONS
+
+Q1. What is pip list?
+
+It displays installed Python packages and their versions in a readable table.
+
+Q2. What is pip freeze?
+
+It displays installed distributions in requirements-file format.
+
+Q3. Why do developers use pip freeze?
+
+To capture installed package versions and help recreate an environment.
+
+Q4. Does pip freeze show only packages imported in our code?
+
+No. It generally lists installed distributions, including transitive dependencies.
+
+Q5. How do you install packages from requirements.txt?
+
+python -m pip install -r requirements.txt
+
+Q6. What is a virtual environment?
+
+An isolated Python environment that keeps project dependencies separate.
+
+Q7. Can two Django projects use different Django versions?
+
+Yes, when each project has its own virtual environment.
+
+Q8. What is the difference between pip freeze and pip list --format=freeze?
+
+Both can display package versions in requirements-style output. Their purposes and command interfaces differ, but their outputs are similar.
+
+Q9. What is pip check?
+
+It checks whether installed packages have compatible dependencies.
+
+python -m pip check
+
+Q10. Is pip freeze a complete production lockfile?
+
+No. It is a snapshot of installed distributions. Production dependencies should be reviewed, tested and managed carefully.
+
+---
+
+11. PRACTICAL ASSIGNMENT
+
+Complete these tasks yourself:
+
+- [ ] Create a virtual environment.
+- [ ] Install Django.
+- [ ] Execute pip list.
+- [ ] Execute pip freeze.
+- [ ] Generate requirements.txt.
+- [ ] Create a second virtual environment.
+- [ ] Install dependencies from requirements.txt.
+- [ ] Execute pip check.
+- [ ] Push the project to GitHub.
+
+---
+
+12. FINAL LEARNING OUTCOME
+
+After completing this repository, you should understand:
+
+1. Python package management.
+2. Virtual environment isolation.
+3. Dependency version management.
+4. Requirements file generation.
+5. Recreating development environments.
+6. Basic Git and GitHub workflow.
+7. Preparing Django projects for deployment.
+
+Core developer principle:
+
+Use "pip list" to inspect your environment.
+
+Use "pip freeze" to capture its installed dependencies.
+
+Use "pip install -r requirements.txt" to recreate those dependencies.
+
+Use separate virtual environments to isolate different projects.
+
+END OF REPOSITORY
